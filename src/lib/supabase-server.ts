@@ -22,3 +22,13 @@ export const supabaseServer = createClient(supabaseUrl, supabaseServiceKey, {
     persistSession: false
   }
 });
+
+// دالة لإنشاء عميل Supabase للخادم
+export function createServerSupabaseClient() {
+  return createClient(supabaseUrl, supabaseServiceKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  });
+}

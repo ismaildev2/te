@@ -1,6 +1,7 @@
 // هذه هي الصفحة الرئيسية للموقع
 
-import { supabase, fixObjectEncoding } from "@/lib/supabase";
+import { fixObjectEncoding } from "@/lib/supabase";
+import { supabaseSSG } from "@/lib/ssg";
 import { FeaturedArticlesSection } from "@/components/FeaturedArticlesSection";
 import { FeaturedAIToolsSection } from "@/components/FeaturedAIToolsSection";
 import { ServicesSection } from "@/components/ServicesSection";
@@ -25,7 +26,12 @@ async function getLatestArticles() {
   try {
     console.log('🏠 Homepage: Fetching latest articles...');
 
-    const { data, error } = await supabase
+    if (!supabaseSSG) {
+      console.error('❌ Homepage: Supabase SSG client not initialized');
+      return [];
+    }
+
+    const { data, error } = await supabaseSSG
       .from('articles')
       .select('*')
       .eq('status', 'published') // فقط المقالات المنشورة
@@ -56,7 +62,12 @@ async function getLatestAITools() {
   try {
     console.log('🏠 Homepage: Fetching latest AI tools...');
 
-    const { data, error } = await supabase
+    if (!supabaseSSG) {
+      console.error('❌ Homepage: Supabase SSG client not initialized');
+      return [];
+    }
+
+    const { data, error } = await supabaseSSG
       .from('ai_tools')
       .select('*')
       .in('status', ['published', 'active']) // قبول كلا من published و active
@@ -86,8 +97,15 @@ async function getLatestAITools() {
 
 async function getLatestServices() {
   try {
+    console.log('🏠 Homepage: Fetching latest services...');
+
+    if (!supabaseSSG) {
+      console.error('❌ Homepage: Supabase SSG client not initialized');
+      return [];
+    }
+
     // جلب الخدمات مباشرة من Supabase بدلاً من API
-    const { data, error } = await supabase
+    const { data, error } = await supabaseSSG
       .from('services')
       .select('*')
       .eq('status', 'active')
