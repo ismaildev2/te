@@ -250,6 +250,23 @@ function EditArticlePage({ params }: EditArticlePageProps) {
       }
 
       console.log('Updating article with data:', articleData);
+      console.log('Article ID:', articleId);
+
+      // التحقق من وجود المقال أولاً
+      const { data: existingArticle, error: checkError } = await supabase
+        .from('articles')
+        .select('id, title')
+        .eq('id', articleId)
+        .single();
+
+      if (checkError || !existingArticle) {
+        console.error('Article not found:', checkError);
+        toast.error('المقال غير موجود أو تم حذفه');
+        router.push('/admin/articles');
+        return;
+      }
+
+      console.log('Article exists, proceeding with update:', existingArticle);
 
       const { data, error } = await supabase
         .from('articles')
@@ -265,10 +282,18 @@ function EditArticlePage({ params }: EditArticlePageProps) {
         // معالجة أخطاء محددة
         if (error.code === '23505') {
           toast.error('الـ slug مستخدم مسبقاً. يرجى تغيير الرابط');
+        } else if (error.code === 'PGRST116') {
+          toast.error('المقال غير موجود أو تم حذفه');
+          router.push('/admin/articles');
+          return;
         } else if (error.message?.includes('duplicate')) {
           toast.error('هناك مقال بنفس الرابط موجود مسبقاً');
         } else if (error.message?.includes('invalid')) {
           toast.error('البيانات المدخلة غير صحيحة');
+        } else if (error.message?.includes('no rows')) {
+          toast.error('المقال غير موجود');
+          router.push('/admin/articles');
+          return;
         } else {
           toast.error(`حدث خطأ في تحديث المقال: ${error.message || 'خطأ غير معروف'}`);
         }
